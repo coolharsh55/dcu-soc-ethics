@@ -1,0 +1,36 @@
+{
+    "4.1": {
+        "4.1.1": {
+            "issue": "Personal data is involved",
+            "fix": "Indicate personal data is involved and complete relevant training"
+        },
+        "4.1.2": {
+            "issue": "Data protection training is not completed",
+            "fix": "Complete the relevant training and indicate this in the form"
+        }
+    },
+    "7": {
+        "7.0.1": {
+            "issue": "Documentation is linked, not attached",
+            "fix": "Attach documents in the PDF rather than linking it externally as we retain records of what was approved/not-approved"
+        },
+        "7.0.2": {
+            "issue": "Particpation information sheet is not attached",
+            "fix": "Attach Particpation information sheet"
+        },
+        "7.0.2": {
+            "issue": "Consent form is not attached",
+            "fix": "Attach Consent form"
+        }
+    },
+    "5.2": {
+        "5.2.1": {
+            "issue": "Consent is required to be obtained",
+            "fix": "Indicate consent is required and how you will obtain it"
+        },
+        "5.2.2": {
+            "issue": "Justification for why consent is not required is not provided",
+            "fix": "Provide explanation for why consent is not needed"
+        }
+    }
+}

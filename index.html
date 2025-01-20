@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoC Ethics Feedback Form</title>
+    <style>
+        body {
+            margin: 20px;
+            gap: 20px;
+        }
+        .container {
+            display: flex;
+        }
+        #form-container {
+            flex: 2;
+            overflow-y: auto;
+            max-height: 90vh;
+            padding: 5px;
+        }
+        #feedback-container {
+            flex: 1;
+        }
+        pre {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #sticky {
+            display: flex;
+            position: sticky;
+            top: 0;
+            background-color: white;
+            border-bottom: 1px solid black;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+        }
+        #sticky>span {
+            font-size: 14px;
+            font-weight: bold;
+            padding-right: 10px;
+        }
+        #sticky>button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sticky">
+        <span>SoC Ethics Feedback Form</span>
+        <button id="generate-feedback" type="button">Generate Feedback</button>
+        <button id="copy-feedback" type="button">Copy to Clipboard</button>
+    </div>
+    <div class="container">
+        <form id="form-container">
+            <div id="form-content"></div>
+            <fieldset>
+            <label>
+                <input type="checkbox" id="discuss-supervisor"> Discuss with your supervisor
+            </label>
+            </fieldset>
+        </form>
+
+        <div id="feedback-container">
+            <h2>Feedback</h2>
+            <pre id="feedback" contenteditable="true"></pre>
+        </div>
+    </div>
+
+    <script>
+        const jsonUrl = 'data.json';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const formContent = document.getElementById('form-content');
+            const feedbackElement = document.getElementById('feedback');
+            const copyButton = document.getElementById('copy-feedback');
+            const discussCheckbox = document.getElementById('discuss-supervisor');
+
+            async function fetchJsonData(url) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        alert(`Error fetching data ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    alert('Failed to fetch data:', error);
+                    return null;
+                }
+            }
+
+            function createForm(json) {
+                for (const [section, issues] of Object.entries(json)) {
+                    const sectionElement = document.createElement('fieldset');
+                    const sectionHeader = document.createElement('p');
+                    sectionHeader.textContent = `Section ${section}`;
+                    sectionElement.appendChild(sectionHeader);
+
+                    for (const [issueKey, issueData] of Object.entries(issues)) {
+                        const label = document.createElement('label');
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.dataset.section = section;
+                        checkbox.dataset.issueKey = issueKey;
+
+                        label.appendChild(checkbox);
+                        label.appendChild(document.createTextNode(` ${issueData.issue}`));
+                        sectionElement.appendChild(label);
+                        sectionElement.appendChild(document.createElement('br'));
+                    }
+
+                    formContent.appendChild(sectionElement);
+                }
+            }
+
+            function generateFeedback(json) {
+                const checkedBoxes = document.querySelectorAll('input[type="checkbox"]:checked');
+                let feedbackText = '';
+
+                if (checkedBoxes.length === 0) {
+                    feedbackText = 'Approved. Second approval needed';
+                } else {
+                    feedbackText = 'Not Approved\n';
+
+                    if (discussCheckbox.checked) {
+                        feedbackText += '\nPlease discuss this feedback with your supervisor.\n';
+                    }
+
+                    checkedBoxes.forEach(checkbox => {
+                        if (checkbox !== discussCheckbox) {
+                            const section = checkbox.dataset.section;
+                            const issueKey = checkbox.dataset.issueKey;
+                            const issueData = json[section][issueKey];
+                            feedbackText += `\nISSUE#${issueKey} ${issueData.issue}.\nFix: ${issueData.fix}.\n`;
+                        }
+                    });
+                }
+
+                feedbackElement.textContent = feedbackText;
+            }
+
+            function copyToClipboard() {
+                navigator.clipboard.writeText(feedbackElement.textContent).then(() => {
+                    alert('Feedback copied to clipboard!');
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+            }
+
+            fetchJsonData(jsonUrl).then(jsonData => {
+                if (jsonData) {
+                    createForm(jsonData);
+                    document.getElementById('generate-feedback').addEventListener('click', () => {
+                        generateFeedback(jsonData);
+                    });
+                    copyButton.addEventListener('click', copyToClipboard);
+                } else {
+                    alert("Error loading form or form data");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
